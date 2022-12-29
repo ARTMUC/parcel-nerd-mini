@@ -1,0 +1,48 @@
+<p>trace works!</p>
+
+<form (ngSubmit)="onSubmit()" #formName="ngForm">
+  <h2>Dodaj nowa trase</h2>
+  <input
+    [(ngModel)]="traceModel.traceName"
+    name="traceName"
+    id="traceName"
+    #name="ngModel"
+    required
+  />
+  <textarea
+    [(ngModel)]="traceModel.nodes"
+    name="nodes"
+    id="nodes"
+    #name="ngModel"
+    placeholder="Przykladowe dane wejsciowe. Mozesz skopiowac dane z listy z Autocada (F3):
+    at point  X=6537790.941  Y=5545664.794  Z=   10.260
+    at point  X=6537820.174  Y=5545664.985  Z=   10.260
+    at point  X=6537920.174  Y=5545664.985  Z=   10.260
+"
+    required
+  ></textarea>
+  <select
+    [(ngModel)]="traceModel.system"
+    name="system"
+    id="system"
+    #name="ngModel"
+    required
+  >
+    <option *ngFor="let def of coordSystems" [ngValue]="def.name">
+      {{ def.name }}{{ def.label }}
+    </option>
+  </select>
+  <button type="submit" [disabled]="!formName.form.valid">Dodaj trase</button>
+</form>
+<div *ngIf="traceList.length">
+  <tr *ngFor="let trace of traceList">
+    <td>{{ trace.traceName }}</td>
+    ||
+    <td>{{ trace.system }}</td>
+    ||
+    <td>
+      <div *ngFor="let node of trace.nodes">({{ node }})</div>
+    </td>
+    <td><button (click)="createParcelList(trace)"></button></td>
+  </tr>
+</div>

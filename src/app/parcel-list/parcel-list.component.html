@@ -1,0 +1,8 @@
+<div *ngIf="parcelList.length">
+  <tr *ngFor="let parcel of parcelList">
+    <td>{{ parcel.parcelNumber }}</td>
+    <td>{{ parcel.voivodeship }}</td>
+    <td>{{ parcel.county }}</td>
+    <td>{{ parcel.commune }}</td>
+  </tr>
+</div>
