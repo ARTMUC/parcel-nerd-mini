@@ -1,48 +1,81 @@
-<p>trace works!</p>
+<div class="row">
+  <div class="col-md-6">
+    <form class="mb-4" (ngSubmit)="onSubmit()" #formName="ngForm">
+      <h2 class="mb-3">Dodaj nową trasę</h2>
+      <div class="mb-3">
+        <label for="traceName" class="form-label">Nazwa trasy</label>
+        <input
+          type="text"
+          class="form-control"
+          id="traceName"
+          name="traceName"
+          [(ngModel)]="traceModel.traceName"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="nodes" class="form-label">Węzły</label>
+        <textarea
+          class="form-control"
+          id="nodes"
+          name="nodes"
+          [(ngModel)]="traceModel.nodes"
+          placeholder="Przykładowe dane wejściowe. Możesz skopiować dane z listy z Autocada (F3):
+      /n at point  X=6537790.941  Y=5545664.794  Z=   10.260
+      /n at point  X=6537820.174  Y=5545664.985  Z=   10.260
+      /n at point  X=6537920.174  Y=5545664.985  Z=   10.260"
+          rows="5"
+          required
+        ></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="system" class="form-label">System współrzędnych</label>
+        <select
+          class="form-select"
+          id="system"
+          name="system"
+          [(ngModel)]="traceModel.system"
+          required
+        >
+          <option *ngFor="let def of coordSystems" [ngValue]="def.name">
+            {{ def.name }}{{ def.label }}
+          </option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="!formName.form.valid">
+        Dodaj trasę
+      </button>
+    </form>
+  </div>
 
-<form (ngSubmit)="onSubmit()" #formName="ngForm">
-  <h2>Dodaj nowa trase</h2>
-  <input
-    [(ngModel)]="traceModel.traceName"
-    name="traceName"
-    id="traceName"
-    #name="ngModel"
-    required
-  />
-  <textarea
-    [(ngModel)]="traceModel.nodes"
-    name="nodes"
-    id="nodes"
-    #name="ngModel"
-    placeholder="Przykladowe dane wejsciowe. Mozesz skopiowac dane z listy z Autocada (F3):
-    at point  X=6537790.941  Y=5545664.794  Z=   10.260
-    at point  X=6537820.174  Y=5545664.985  Z=   10.260
-    at point  X=6537920.174  Y=5545664.985  Z=   10.260
-"
-    required
-  ></textarea>
-  <select
-    [(ngModel)]="traceModel.system"
-    name="system"
-    id="system"
-    #name="ngModel"
-    required
-  >
-    <option *ngFor="let def of coordSystems" [ngValue]="def.name">
-      {{ def.name }}{{ def.label }}
-    </option>
-  </select>
-  <button type="submit" [disabled]="!formName.form.valid">Dodaj trase</button>
-</form>
-<div *ngIf="traceList.length">
-  <tr *ngFor="let trace of traceList">
-    <td>{{ trace.traceName }}</td>
-    ||
-    <td>{{ trace.system }}</td>
-    ||
-    <td>
-      <div *ngFor="let node of trace.nodes">({{ node }})</div>
-    </td>
-    <td><button (click)="createParcelList(trace)"></button></td>
-  </tr>
+  <div class="col-md-6">
+
+    <div *ngIf="traceList.length" class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>Nazwa trasy</th>
+          <th>System współrzędnych</th>
+          <th>Węzły</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let trace of traceList">
+          <td>{{ trace.traceName }}</td>
+          <td>{{ trace.system }}</td>
+          <td>
+            <div *ngFor="let node of trace.nodes">({{ node }})</div>
+          </td>
+          <td>
+            <button class="btn btn-secondary" (click)="createParcelList(trace)">
+              Pobierz dane
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>

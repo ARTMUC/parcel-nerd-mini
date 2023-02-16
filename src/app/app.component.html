@@ -1,28 +1,18 @@
-<ul class="navbar">
-  <li>
-    <a
-      routerLink="/map"
-      class="navbar__tab"
-      routerLinkActive="navbar__tab--active"
-      >Mapa</a
-    >
-  </li>
-  <li>
-    <a
-      routerLink="/trace"
-      class="navbar__tab"
-      routerLinkActive="navbar__tab--active"
-      >Trasa</a
-    >
-  </li>
-  <li>
-    <a
-      routerLink="/parcel-list"
-      class="navbar__tab"
-      routerLinkActive="navbar__tab--active"
-      >Dzialki</a
-    >
-  </li>
-</ul>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <span class="navbar-brand">My App</span>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/map" routerLinkActive="active">Mapa</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/trace" routerLinkActive="active">Trasa</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/parcel-list" routerLinkActive="active">Działki</a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
 <router-outlet></router-outlet>
