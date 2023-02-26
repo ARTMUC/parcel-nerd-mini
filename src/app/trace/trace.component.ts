@@ -7,6 +7,7 @@ import { coordSystemDefinitions } from '../services/coordinates-converter/coordi
 import { ParcelService } from '../services/parcel/parcel.service';
 import { UldkService } from '../services/third-party/uldk/uldk.service';
 import { TraceService } from '../services/trace/trace.service';
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-trace',
@@ -17,13 +18,15 @@ export class TraceComponent implements OnInit {
   coordSystems = coordSystemDefinitions;
   traceList: Trace[] = [];
   subscription: Subscription = new Subscription();
-  traceModel = { traceName: '', system: '', nodes: '' };
+  traceModel = {traceName: '', system: '', nodes: ''};
 
   constructor(
     private parcelService: ParcelService,
     private coordinatesConverterService: CoordinatesConverterService,
-    private traceService: TraceService
-  ) {}
+    private traceService: TraceService,
+    private router: Router
+  ) {
+  }
 
   ngOnInit(): void {
     this.subscription = this.traceService.data.subscribe(
@@ -41,7 +44,7 @@ export class TraceComponent implements OnInit {
       ),
     };
     this.traceService.add(newTrace);
-    this.traceModel = { traceName: '', system: '', nodes: '' };
+    this.traceModel = {traceName: '', system: '', nodes: ''};
   }
 
   ngOnDestroy() {
@@ -54,15 +57,9 @@ export class TraceComponent implements OnInit {
       trace.system
     );
     this.parcelService
-      .createParcelList(degNodes)
-      .pipe(
-        tap({
-          next: () => console.log('loading.....'),
-          error: (error) => console.log('error', error),
-          complete: () => console.log('loading complete'),
-        }),
-        finalize(() => console.log('loading finalised'))
-      )
-      .subscribe();
+      .createParcelList(degNodes, `for line: ${trace.traceName}`)
+      .subscribe(() => {
+      }, () => {
+      }, () => this.router.navigate(['../']));
   }
 }

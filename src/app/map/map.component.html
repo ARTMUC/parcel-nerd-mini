@@ -1,3 +1,35 @@
-<div id="map" style="height: 500px"></div>
-<button (click)="printMap()">Print Map</button>
 
+  <div class="row">
+    <div class="col-md-12">
+      <div id="map" style="height: 80vh"></div>
+    </div>
+  </div>
+  <div class="row mt-4" *ngIf="parcelList && parcelList.length > 0">
+    <div class="col-md-12">
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+          <thead>
+          <tr>
+            <th>Parcel Number</th>
+            <th>Wojewodztwo</th>
+            <th>Powiat</th>
+            <th>Gmina</th>
+            <th>Komentarz</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let parcel of parcelList">
+            <td>{{ parcel.parcelNumber }}</td>
+            <td>{{ parcel.voivodeship }}</td>
+            <td>{{ parcel.county }}</td>
+            <td>{{ parcel.commune }}</td>
+            <td>{{ parcel.comment }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-end">
+          <button class="btn btn-primary" (click)="downloadCsv()">Download CSV</button>
+      </div>
+    </div>
+  </div>

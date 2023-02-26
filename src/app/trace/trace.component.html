@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-md-4">
     <form class="mb-4" (ngSubmit)="onSubmit()" #formName="ngForm">
       <h2 class="mb-3">Dodaj nową trasę</h2>
       <div class="mb-3">
@@ -14,21 +14,6 @@
         />
       </div>
       <div class="mb-3">
-        <label for="nodes" class="form-label">Węzły</label>
-        <textarea
-          class="form-control"
-          id="nodes"
-          name="nodes"
-          [(ngModel)]="traceModel.nodes"
-          placeholder="Przykładowe dane wejściowe. Możesz skopiować dane z listy z Autocada (F3):
-      /n at point  X=6537790.941  Y=5545664.794  Z=   10.260
-      /n at point  X=6537820.174  Y=5545664.985  Z=   10.260
-      /n at point  X=6537920.174  Y=5545664.985  Z=   10.260"
-          rows="5"
-          required
-        ></textarea>
-      </div>
-      <div class="mb-3">
         <label for="system" class="form-label">System współrzędnych</label>
         <select
           class="form-select"
@@ -38,9 +23,24 @@
           required
         >
           <option *ngFor="let def of coordSystems" [ngValue]="def.name">
-            {{ def.name }}{{ def.label }}
+            {{ def.name }}
           </option>
         </select>
+      </div>
+      <div class="mb-3">
+        <label for="nodes" class="form-label">Węzły</label>
+        <textarea
+          class="form-control"
+          id="nodes"
+          name="nodes"
+          [(ngModel)]="traceModel.nodes"
+          placeholder="Przykładowe dane wejściowe. Możesz skopiować dane z listy z Autocada (F3):
+       at point  X=6537790.941  Y=5545664.794  Z=   10.260
+       at point  X=6537820.174  Y=5545664.985  Z=   10.260
+       at point  X=6537920.174  Y=5545664.985  Z=   10.260"
+          rows="18"
+          required
+        ></textarea>
       </div>
       <button type="submit" class="btn btn-primary" [disabled]="!formName.form.valid">
         Dodaj trasę
@@ -48,7 +48,7 @@
     </form>
   </div>
 
-  <div class="col-md-6">
+  <div class="col-md-8">
 
     <div *ngIf="traceList.length" class="table-responsive">
       <table class="table table-striped">

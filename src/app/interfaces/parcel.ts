@@ -4,4 +4,5 @@ export interface Parcel {
   county: string;
   commune: string;
   parcelBounds: number[][];
+  comment?: string;
 }

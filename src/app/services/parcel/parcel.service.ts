@@ -6,6 +6,7 @@ import { Trace } from 'src/app/interfaces/trace';
 import { UldkService } from '../third-party/uldk/uldk.service';
 import * as geolib from 'geolib';
 import { Parcel } from 'src/app/interfaces/parcel';
+import { NgxSpinnerService } from "ngx-spinner";
 
 // nice snippet
 // const notNull = <T>(item: T | null | undefined): item is T => item != null;
@@ -22,26 +23,81 @@ export class ParcelService {
   parcelList: Parcel[] = [];
   private dataSource = new BehaviorSubject<Parcel[]>([]);
   data = this.dataSource.asObservable();
-  constructor(private uldkService: UldkService) {}
 
-  public add(parcel: Parcel) {
-    this.parcelList.push(parcel);
-    this.dataSource.next(this.parcelList);
+  constructor(private uldkService: UldkService, private spinner: NgxSpinnerService) {
   }
 
-  public createParcelList(nodes: number[][]) {
+  // public add(parcel: Parcel) {
+  //   this.parcelList.push(parcel);
+  //   this.dataSource.next(this.parcelList);
+  // }
+
+  public addParcelByXY(x: number, y: number) {
+    for (const parcel of this.parcelList) {
+      if (this.isInBounds(x, y, parcel)) {
+        console.log('already on the list')
+        return
+      }
+    }
+
+    this.spinner.show();
+    this.uldkService.fetchParcelDataByXY([x, y]).pipe(
+      tap({
+        next: (resp) => {
+          console.log('[next] Called');
+          const newParcel = resp.parcel;
+          const existingParcel = this.parcelList.find(
+            (ex) => ex.parcelNumber === newParcel.parcelNumber
+          );
+          if (!existingParcel) {
+            const closestParcel = this.getClosestParcel(newParcel);
+            if (!closestParcel) {
+              // If there are no parcels on the list yet, add the new parcel as the first item.
+              this.parcelList.push(newParcel);
+            } else {
+              const closestParcelIndex = this.parcelList.findIndex(e => e.parcelNumber === closestParcel?.parcelNumber);
+              if (closestParcelIndex === this.parcelList.length - 1) {
+                this.parcelList.push(newParcel);
+              } else {
+                // Otherwise, insert the new parcel after the closest parcel.
+                this.parcelList.splice(closestParcelIndex + 1, 0, newParcel);
+              }
+            }
+
+          }
+        },
+        error: (error) => {
+          this.spinner.hide();
+          console.log('[error] Called', error);
+        },
+        complete: () => {
+          console.log('[tap complete] Called');
+          this.dataSource.next([...this.parcelList]);
+        },
+      }),
+      finalize(() => {
+        this.spinner.hide();
+        console.log('[finalize] Called');
+      })
+    ).subscribe();
+  }
+
+
+  public createParcelList(nodes: number[][], comment?: string) {
     const lines = this.mapNodesToLines(nodes);
 
     if (!lines) {
       return EMPTY;
     }
 
+    this.spinner.show()
+
     return from(lines)
       .pipe(
         concatMap((line) =>
           this.uldkService.fetchParcelDataByXY(line.prevNode).pipe(
             expand((resp) => {
-              const { parcel, node } = resp;
+              const {parcel, node} = resp;
               if (!resp) {
                 return EMPTY;
               }
@@ -59,7 +115,7 @@ export class ParcelService {
         )
       )
       .pipe(
-        distinct(({ parcel: { parcelNumber } }) => parcelNumber),
+        distinct(({parcel: {parcelNumber}}) => parcelNumber),
         tap({
           next: (resp) => {
             console.log('[next] Called');
@@ -67,16 +123,23 @@ export class ParcelService {
               (parcel) => parcel.parcelNumber === resp.parcel.parcelNumber
             );
             if (!parcel) {
+              resp.parcel.comment = comment
               this.parcelList.push(resp.parcel);
             }
           },
-          error: (error) => console.log('[error] Called', error),
+          error: (error) => {
+            this.spinner.hide()
+            console.log('[error] Called', error)
+          },
           complete: () => {
             console.log('[tap complete] Called');
             this.dataSource.next([...this.parcelList]);
           },
         }),
-        finalize(() => console.log('[finalize] Called'))
+        finalize(() => {
+          this.spinner.hide()
+          console.log('[finalize] Called')
+        })
       );
   }
 
@@ -126,9 +189,10 @@ export class ParcelService {
       nextNode
     );
   }
+
   private getIntersectionWithParcelBound(
     parcelBoundLine: Line,
-    traceLine: { prevNode: number[]; nextNode: number[] }
+    traceLine: {prevNode: number[]; nextNode: number[]}
   ) {
     return this.findLinesIntersection(
       parcelBoundLine.prevNode,
@@ -145,7 +209,7 @@ export class ParcelService {
     const lines = nodes
       .map((node, i) => {
         if (i + 1 < nodes.length) {
-          return { prevNode: node, nextNode: nodes[i + 1] };
+          return {prevNode: node, nextNode: nodes[i + 1]};
         }
         return;
       })
@@ -178,5 +242,46 @@ export class ParcelService {
     const newY = y1 + (offset / lineLength) * (y2 - y1);
 
     return [newX, newY];
+  }
+
+  private isInBounds(x: number, y: number, parcel: Parcel) {
+    const bounds = parcel.parcelBounds;
+    let isInBounds = false;
+
+    for (let i = 0, j = bounds.length - 1; i < bounds.length; j = i++) {
+      const xi = bounds[i][0];
+      const yi = bounds[i][1];
+      const xj = bounds[j][0];
+      const yj = bounds[j][1];
+
+      const intersect =
+        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+      if (intersect) {
+        isInBounds = !isInBounds;
+      }
+    }
+
+    return isInBounds;
+  }
+
+  private getClosestParcel(parcel: Parcel) {
+    let closestParcel = null;
+    let closestDistance = Infinity;
+
+    for (const existingParcel of this.parcelList) {
+      const distance = this.distance(parcel.parcelBounds[0][0], parcel.parcelBounds[0][1], existingParcel.parcelBounds[0][0], existingParcel.parcelBounds[0][1]);
+
+      if (distance < closestDistance) {
+        closestParcel = existingParcel;
+        closestDistance = distance;
+      }
+    }
+
+    return closestParcel;
+  }
+
+  private distance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   }
 }
