@@ -57,7 +57,7 @@ export class TraceComponent implements OnInit {
       trace.system
     );
     this.parcelService
-      .createParcelList(degNodes, `for line: ${trace.traceName}`)
+      .createParcelList(degNodes, `${trace.traceName}`)
       .subscribe(() => {
       }, () => {
       }, () => this.router.navigate(['../']));

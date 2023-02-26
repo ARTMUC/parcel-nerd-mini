@@ -156,11 +156,11 @@ export class MapComponent implements OnInit, OnDestroy {
 
   downloadCsv() {
     const csvRows = [];
-    const headers = ['Parcel Number', 'Voivodeship', 'County', 'Commune'];
+    const headers = ['Numer dzialki', 'Wojewodztwo', 'Powiat', 'Gmina', 'komentarz'];
     csvRows.push(headers.join(','));
 
     this.parcelList.forEach((parcel) => {
-      const row = [parcel.parcelNumber, parcel.voivodeship, parcel.county, parcel.commune];
+      const row = [parcel.parcelNumber, parcel.voivodeship, parcel.county, parcel.commune, parcel.comment];
       csvRows.push(row.join(','));
     });
 
