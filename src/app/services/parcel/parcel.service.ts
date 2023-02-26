@@ -27,16 +27,15 @@ export class ParcelService {
   constructor(private uldkService: UldkService, private spinner: NgxSpinnerService) {
   }
 
-  // public add(parcel: Parcel) {
-  //   this.parcelList.push(parcel);
-  //   this.dataSource.next(this.parcelList);
-  // }
+  public delete(parcel: Parcel) {
+    this.parcelList = this.parcelList.filter(p => p.parcelNumber != parcel.parcelNumber)
+    this.dataSource.next([...this.parcelList]);
+  }
 
-  public addParcelByXY(x: number, y: number) {
+  public addParcelByXY(x: number, y: number): Parcel | void {
     for (const parcel of this.parcelList) {
       if (this.isInBounds(x, y, parcel)) {
-        console.log('already on the list')
-        return
+        return parcel
       }
     }
 

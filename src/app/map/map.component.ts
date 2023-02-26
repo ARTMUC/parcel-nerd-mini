@@ -3,12 +3,18 @@ import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
 import { Parcel } from "../interfaces/parcel";
 import { ParcelService } from "../services/parcel/parcel.service";
-import { LatLngBoundsExpression, LatLngExpression, LatLngTuple } from "leaflet";
+import { LatLngBoundsExpression, LatLngExpression, LatLngTuple, LeafletMouseEventHandlerFn } from "leaflet";
 import 'leaflet-easyprint';
 import { TraceService } from "../services/trace/trace.service";
 import { Trace } from "../interfaces/trace";
 import { CoordinatesConverterService } from "../services/coordinates-converter/coordinates-converter.service";
 
+
+class LineString {
+}
+
+class MultiLineString {
+}
 
 @Component({
   selector: 'app-map',
@@ -19,7 +25,7 @@ export class MapComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   subscription2: Subscription = new Subscription();
   parcelList: Parcel[] = [];
-  drawnParcels: Parcel[] = [];
+  drawnParcels: {parcel: Parcel, pl: any}[] = [];
   traceList: Trace[] = []
   drawnTraces: Trace[] = []
   map!: L.Map;
@@ -37,7 +43,7 @@ export class MapComponent implements OnInit, OnDestroy {
     format: 'image/png',
     control: true,
     tiled: true,
-    maxZoom: 18,
+    maxZoom: 20,
     transparent: true,
     keepBuffer: 20,
     tileSize: 1024
@@ -84,8 +90,16 @@ export class MapComponent implements OnInit, OnDestroy {
       zoom: 10
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    // }).addTo(this.map);
+    // url="http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+    // subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+    // maxZoom={21}
+    // eventHandlers={{ click: (e) => console.log(e) }}
+    L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], maxZoom: 20
     }).addTo(this.map);
     L.tileLayer.wms(this.parcelsWmsUrl.url, {
       layers: this.parcelsWmsUrl.layers,
@@ -98,26 +112,30 @@ export class MapComponent implements OnInit, OnDestroy {
 
     this.map.on('click', (event) => {
       console.log(`Clicked at ${event.latlng.lat}, ${event.latlng.lng}`);
-      this.parcelService.addParcelByXY(event.latlng.lat, event.latlng.lng)
+      const currParcel = this.parcelService.addParcelByXY(event.latlng.lat, event.latlng.lng)
+      if (currParcel) {
+        alert(currParcel.parcelNumber)
+      }
     });
   }
 
   drawBounds(): void {
     this.parcelList.forEach((parcel) => {
-      if (!!this.drawnParcels.find(p => p.parcelNumber === parcel.parcelNumber)) {
+      if (!!this.drawnParcels.find(p => p.parcel.parcelNumber === parcel.parcelNumber)) {
         return
       }
       const latLngBounds = parcel.parcelBounds.map((coords) => {
         return [coords[0], coords[1]] as LatLngTuple;
       });
-      L.polyline(latLngBounds, {
+      const pl = L.polyline(latLngBounds, {
         color: 'purple',
         fill: true,
         fillColor: 'purple',
         noClip: true,
-        fillOpacity: 0.7
+        fillOpacity: 0.5,
+
       }).addTo(this.map);
-      this.drawnParcels.push(parcel)
+      this.drawnParcels.push({parcel, pl})
     });
   }
 
@@ -134,24 +152,13 @@ export class MapComponent implements OnInit, OnDestroy {
       if (trace.nodes.length > 0) {
         this.map.fitBounds(latLngBounds, {})
       }
+      this.drawnTraces.push(trace)
     });
   }
 
   ngOnDestroy(): void {
     // this.subscription.unsubscribe();
     // this.subscription2.unsubscribe();
-  }
-
-  printMap() {
-    //@TODO fix printing
-    // const easyPrint = L.easyPrint({
-    //   title: 'My Map',
-    //   position: 'topleft',
-    //   sizeModes: ['Current', 'A4Landscape', 'A4Portrait'],
-    //   hideClasses: ['leaflet-control-container', 'leaflet-top', 'leaflet-bottom']
-    // }).addTo(this.map);
-    //
-    // easyPrint.print();
   }
 
   downloadCsv() {
@@ -172,5 +179,12 @@ export class MapComponent implements OnInit, OnDestroy {
     a.download = 'parcels.csv';
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+
+  removeParcel(parcel: Parcel) {
+    this.parcelService.delete(parcel)
+    const pl = this.drawnParcels.find(p => p.parcel.parcelNumber === parcel.parcelNumber)?.pl
+    this.drawnParcels = this.drawnParcels.filter(p => p.parcel.parcelNumber != parcel.parcelNumber)
+    this.map.removeLayer(pl)
   }
 }
