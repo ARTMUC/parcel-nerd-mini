@@ -23,7 +23,7 @@
           required
         >
           <option *ngFor="let def of coordSystems" [ngValue]="def.name">
-            {{ def.name }}
+            {{ def.name }} /  {{ def.label }}
           </option>
         </select>
       </div>

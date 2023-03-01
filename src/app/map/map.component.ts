@@ -90,16 +90,17 @@ export class MapComponent implements OnInit, OnDestroy {
       zoom: 10
     });
 
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-    // }).addTo(this.map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 17
+    }).addTo(this.map);
     // url="http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     // subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
     // maxZoom={21}
     // eventHandlers={{ click: (e) => console.log(e) }}
     L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
       attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], maxZoom: 20
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], maxZoom: 20, minZoom: 18
     }).addTo(this.map);
     L.tileLayer.wms(this.parcelsWmsUrl.url, {
       layers: this.parcelsWmsUrl.layers,
