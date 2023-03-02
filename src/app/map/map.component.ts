@@ -8,13 +8,8 @@ import 'leaflet-easyprint';
 import { TraceService } from "../services/trace/trace.service";
 import { Trace } from "../interfaces/trace";
 import { CoordinatesConverterService } from "../services/coordinates-converter/coordinates-converter.service";
+import { NgxSpinnerService } from "ngx-spinner";
 
-
-class LineString {
-}
-
-class MultiLineString {
-}
 
 @Component({
   selector: 'app-map',
@@ -51,7 +46,8 @@ export class MapComponent implements OnInit, OnDestroy {
 
   constructor(private parcelService: ParcelService,
               private traceService: TraceService,
-              private coordinatesConverterService: CoordinatesConverterService) {
+              private coordinatesConverterService: CoordinatesConverterService,
+              private spinner: NgxSpinnerService) {
   }
 
   ngOnInit(): void {
@@ -187,5 +183,19 @@ export class MapComponent implements OnInit, OnDestroy {
     const pl = this.drawnParcels.find(p => p.parcel.parcelNumber === parcel.parcelNumber)?.pl
     this.drawnParcels = this.drawnParcels.filter(p => p.parcel.parcelNumber != parcel.parcelNumber)
     this.map.removeLayer(pl)
+  }
+
+  locate(): void {
+    this.spinner.show()
+    this.map.locate({watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true, timeout: 1000});
+    this.map.once('locationfound', (e) => {
+      console.log("e", e)
+      this.spinner.hide()
+      const circle = L.circle([e.latlng.lat, e.latlng.lng], {radius: 3, color: 'red'}).addTo(this.map);
+      setTimeout(() => {
+        this.map.removeLayer(circle)
+      }, 10000)
+      this.map.stopLocate()
+    })
   }
 }
