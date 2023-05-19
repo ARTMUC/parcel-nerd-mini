@@ -12,6 +12,7 @@ export class UldkService {
 
   fetchParcelDataByXY(node: number[]) {
     const [x, y] = node;
+    console.log("call", x,y)
     return this.http
       .get<string>(
         `https://uldk.gugik.gov.pl/?request=GetParcelByXY&xy=${y},${x},4326&result=id,voivodeship,county,commune,geom_wkt&srid=4326`,
@@ -19,7 +20,7 @@ export class UldkService {
       )
       .pipe(
         map((r) => this.extractParcelData(r)),
-        filter((item: Parcel | undefined): item is Parcel => item != null),
+        // filter((item: Parcel | undefined): item is Parcel => item != null),
         map((parcel) => {
           return {parcel, node};
         })

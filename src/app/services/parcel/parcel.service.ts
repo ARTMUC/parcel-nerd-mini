@@ -46,9 +46,9 @@ export class ParcelService {
           console.log('[next] Called');
           const newParcel = resp.parcel;
           const existingParcel = this.parcelList.find(
-            (ex) => ex.parcelNumber === newParcel.parcelNumber
+            (ex) => ex.parcelNumber === newParcel?.parcelNumber
           );
-          if (!existingParcel) {
+          if (!existingParcel && newParcel) {
             const closestParcel = this.getClosestParcel(newParcel);
             if (!closestParcel) {
               // If there are no parcels on the list yet, add the new parcel as the first item.
@@ -100,6 +100,9 @@ export class ParcelService {
               if (!resp) {
                 return EMPTY;
               }
+              if (!parcel) {
+                return this.uldkService.fetchParcelDataByXY(this.offsetNode(node,line.nextNode));
+              }
               const newPrevNode = this.getNewPrevNode(
                 parcel,
                 node,
@@ -114,16 +117,19 @@ export class ParcelService {
         )
       )
       .pipe(
-        distinct(({parcel: {parcelNumber}}) => parcelNumber),
+        // distinct(({parcel: {parcelNumber}}) => parcelNumber),
         tap({
           next: (resp) => {
             console.log('[next] Called');
-            const parcel = this.parcelList.find(
-              (parcel) => parcel.parcelNumber === resp.parcel.parcelNumber
-            );
-            if (!parcel) {
-              resp.parcel.comment = comment
-              this.parcelList.push(resp.parcel);
+            if (resp.parcel){
+              const parcel = this.parcelList.find(
+                (parcel) => parcel.parcelNumber === resp.parcel?.parcelNumber
+              );
+              if (!parcel) {
+                // @ts-ignore
+                resp.parcel.comment = comment
+                this.parcelList.push(resp.parcel);
+              }
             }
           },
           error: (error) => {
