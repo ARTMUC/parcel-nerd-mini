@@ -1,5 +1,7 @@
 # ParcelNerdMini
 
+[Go to app](https://mapka7bf5f896.web.app/map?fbclid=IwY2xjawFoeYpleHRuA2FlbQIxMQABHYEypLx_Jv07OkxqN5KaVDQ2haAcWBMtTZeGyEwlxRewIg-z4K6je9RMtw_aem_53nZ-FTGxt7aZdzw_Hd9Dw)
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.1.1.
 
 ## Development server
